@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../../models/user/User.js";
-import Role from "../../models/user/Role.js"; 
+import Role from "../../models/user/Role.js";
+import Safe from "../../models/Safe.js";
 import {
   signupSchema,
   loginSchema,
@@ -9,7 +10,7 @@ import {
 
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user.id, email: user.email, role: user.Role.name }, 
+    { id: user.id, email: user.email, role: user.Role.name },
     process.env.JWT_SECRET,
     { expiresIn: "9h" }
   );
@@ -29,11 +30,18 @@ const registerUser = async (userData) => {
     password: userData.password,
     phone: userData.phone || null,
     avatar: userData.avatar || null,
-    role_id: userData.role_id || 2, 
+    role_id: userData.role_id || 2,
   });
 
   await user.reload({ include: [{ model: Role, attributes: ["name"] }] });
 
+  await Safe.create({
+    name: `Safe for ${user.name}`,
+    type: userData.safe_type || "company",
+    user_id: user.id,
+    branch_id: userData.branch_id || null,
+  });
+  // }
   return user;
 };
 

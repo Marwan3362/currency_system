@@ -1,9 +1,11 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../../config/db.js";
-import Role from "./Role.js";
+// import sequelize from "../../config/db.js";
+import sequelize from "../config/db.js";
 
-const User = sequelize.define(
-  "User",
+import User from "./user/User.js";
+
+const Company = sequelize.define(
+  "Company",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -13,28 +15,25 @@ const User = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: { notEmpty: true },
-    },
-    // name_ar: {
-    //   type: DataTypes.STRING,
-    //   allowNull: true,
-    // },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
       unique: true,
-      validate: { isEmail: true },
     },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    phone: {
+    name_ar: {
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
     },
-    avatar: {
+    company_email: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        isEmail: true,
+      },
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    address: {
       type: DataTypes.STRING,
       allowNull: true,
     },
@@ -42,22 +41,31 @@ const User = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
-    role_id: {
+    owner_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 2,
       references: {
-        model: Role,
+        model: "users",
         key: "id",
       },
+      onUpdate: "CASCADE",
+      onDelete: "RESTRICT",
     },
   },
   {
     timestamps: true,
-    tableName: "users",
+    tableName: "companies",
   }
 );
-Role.hasMany(User, { foreignKey: "role_id" });
-User.belongsTo(Role, { foreignKey: "role_id" });
 
-export default User;
+Company.belongsTo(User, {
+  foreignKey: "owner_id",
+  as: "owner",
+});
+
+User.hasMany(Company, {
+  foreignKey: "owner_id",
+  as: "owned_companies",
+});
+
+export default Company;

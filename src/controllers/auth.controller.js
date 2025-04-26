@@ -2,7 +2,7 @@ import authService from "../services/users/User.services.js";
 import Role from "../models/user/Role.js";
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, phone, role_id } = req.body;
+    const { name, email, password, phone, role_id, safe_type} = req.body;
     const avatar = req.file ? `/uploads/${req.file.filename}` : null;
 
     const user = await authService.registerUser({
@@ -12,6 +12,7 @@ export const signup = async (req, res) => {
       phone,
       avatar,
       role_id,
+      safe_type
     });
 
     res.status(201).json({
