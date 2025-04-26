@@ -7,35 +7,26 @@ const seedRoles = async () => {
       { id: 2, name: "User", description: "Limited access" },
       {
         id: 3,
-        name: "Store Owner/Manager",
+        name: "Company Owner",
         description: "Manages store operations",
       },
       {
         id: 4,
-        name: "Financial Manager",
+        name: "Branch Manager",
         description: "Handles financial transactions and reporting",
       },
       {
         id: 5,
-        name: "Operations Manager",
-        description: "Oversees daily business operations",
+        name: "Teller",
+        description: "Make transactions",
       },
-      { id: 6, name: "Teller", description: "Processes customer transactions" },
+      
       {
-        id: 7,
-        name: "Compliance Officer",
-        description: "Ensures regulatory compliance",
-      },
-      {
-        id: 8,
-        name: "Customer (Retail & Business)",
+        id: 6,
+        name: "Customer",
         description: "End users of the platform",
       },
-      {
-        id: 9,
-        name: "IT Administrator",
-        description: "Manages system infrastructure and security",
-      },
+
     ];
 
     for (const role of roles) {
