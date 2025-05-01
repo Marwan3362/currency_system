@@ -1,6 +1,8 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../../config/db.js";
 import Role from "./Role.js";
+import Safe from "../Safe.js"; 
+import UserCompany from "../UserCompany.js"; 
 
 const User = sequelize.define(
   "User",
@@ -15,10 +17,6 @@ const User = sequelize.define(
       allowNull: false,
       validate: { notEmpty: true },
     },
-    // name_ar: {
-    //   type: DataTypes.STRING,
-    //   allowNull: true,
-    // },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -32,7 +30,7 @@ const User = sequelize.define(
     phone: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
+      unique: false,
     },
     avatar: {
       type: DataTypes.STRING,
@@ -57,6 +55,12 @@ const User = sequelize.define(
     tableName: "users",
   }
 );
+
+User.hasMany(UserCompany, { foreignKey: "user_id" }); 
+UserCompany.belongsTo(User, { foreignKey: "user_id" }); 
+
+User.hasOne(Safe, { foreignKey: "user_id", as: "userSafe" });
+
 Role.hasMany(User, { foreignKey: "role_id" });
 User.belongsTo(Role, { foreignKey: "role_id" });
 

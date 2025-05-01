@@ -1,10 +1,6 @@
 import { DataTypes } from "sequelize";
-// import sequelize from "../../config/db.js";
 import sequelize from "../config/db.js";
-
-import User from "./user/User.js";
 import Company from "./Company.js";
-
 
 const Branch = sequelize.define(
   "Branch",
@@ -17,7 +13,6 @@ const Branch = sequelize.define(
     company_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      
       references: {
         model: Company,
         key: "id",
@@ -27,7 +22,7 @@ const Branch = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: User,
+        model: "users",
         key: "id",
       },
     },
@@ -58,10 +53,19 @@ const Branch = sequelize.define(
   }
 );
 
+const associateUser = async () => {
+  const { default: User } = await import("./user/User.js");
+  Branch.belongsTo(User, { foreignKey: "branch_manager", as: "manager" });
+
+  User.hasMany(Branch, {
+    foreignKey: "branch_manager",
+    as: "managed_branches",
+  });
+};
+
+associateUser();
+
 Company.hasMany(Branch, { foreignKey: "company_id" });
 Branch.belongsTo(Company, { foreignKey: "company_id" });
-
-User.hasMany(Branch, { foreignKey: "branch_manager", as: "managed_branches" });
-Branch.belongsTo(User, { foreignKey: "branch_manager", as: "manager" });
 
 export default Branch;

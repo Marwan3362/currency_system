@@ -3,6 +3,9 @@ import jwt from "jsonwebtoken";
 import User from "../../models/user/User.js";
 import Role from "../../models/user/Role.js";
 import Safe from "../../models/Safe.js";
+import UserCompany from "../../models/UserCompany.js";
+import Branch from "../../models/Branch.js";
+
 import {
   signupSchema,
   loginSchema,
@@ -21,6 +24,14 @@ const registerUser = async (userData) => {
 
   const existingUser = await User.findOne({ where: { email: userData.email } });
   if (existingUser) throw new Error("Email already exists");
+  const existingPhone = await User.findOne({
+    where: { phone: userData.phone },
+  });
+  if (existingPhone) throw new Error("Phone is already exists");
+  if (userData.branch_id) {
+    const branch = await Branch.findOne({ where: { id: userData.branch_id } });
+    if (!branch) throw new Error("Branch not found");
+  }
 
   userData.password = await bcrypt.hash(userData.password, 10);
 
@@ -35,14 +46,23 @@ const registerUser = async (userData) => {
 
   await user.reload({ include: [{ model: Role, attributes: ["name"] }] });
 
-  await Safe.create({
+  if (userData.role_id == 6) {
+    return { user }; 
+  }
+  const safe = await Safe.create({
     name: `Safe for ${user.name}`,
     type: userData.safe_type || "company",
     user_id: user.id,
     branch_id: userData.branch_id || null,
   });
-  // }
-  return user;
+
+  await UserCompany.create({
+    user_id: user.id,
+    company_id: 1,
+    branch_id: userData.branch_id || null,
+  });
+
+  return { user, safe_id: safe.id };
 };
 
 const loginUser = async (userData) => {
@@ -50,7 +70,16 @@ const loginUser = async (userData) => {
 
   const user = await User.findOne({
     where: { email: userData.email },
-    include: [{ model: Role, attributes: ["name"] }],
+    include: [
+      { model: Role, attributes: ["name"] },
+      { model: Safe, as: "userSafe", attributes: ["id"] },
+      {
+        model: UserCompany,
+        include: [
+          { model: Branch, as: "branchDetails", attributes: ["id", "name"] },
+        ],
+      },
+    ],
   });
 
   if (!user) throw new Error("Invalid email or password");
@@ -59,7 +88,17 @@ const loginUser = async (userData) => {
   if (!isMatch) throw new Error("Invalid email or password");
 
   const token = generateToken(user);
-  return { user, token };
+
+  const safe_id = user.userSafe ? user.userSafe.id : null;
+  const branch_id =
+    user.UserCompanies.length > 0 ? user.UserCompanies[0].branch_id : null;
+
+  return {
+    user,
+    safe_id,
+    branch_id,
+    token,
+  };
 };
 
 export default { registerUser, loginUser };

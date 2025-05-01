@@ -19,7 +19,6 @@ class SafeTransferService {
     const t = await sequelize.transaction();
 
     try {
-      // 1. خصم من الخزنة الأولى
       const fromBalance = await SafeBalance.findOne({
         where: { safe_id: from_safe_id, currency_id },
         transaction: t,
@@ -32,7 +31,6 @@ class SafeTransferService {
       fromBalance.amount = Number(fromBalance.amount) - Number(amount);
       await fromBalance.save({ transaction: t });
 
-      // 2. إضافة في الخزنة التانية
       let toBalance = await SafeBalance.findOne({
         where: { safe_id: to_safe_id, currency_id },
         transaction: t,
@@ -52,7 +50,6 @@ class SafeTransferService {
         await toBalance.save({ transaction: t });
       }
 
-      // 3. إنشاء SafeTransfer
       const transfer = await SafeTransfer.create(
         {
           from_safe_id,
@@ -65,7 +62,6 @@ class SafeTransferService {
         { transaction: t }
       );
 
-      // 4. إنشاء Transaction للخزنة الأولى (out)
       await Transaction.create(
         {
           safe_id: from_safe_id,
@@ -82,7 +78,6 @@ class SafeTransferService {
         { transaction: t }
       );
 
-      // 5. إنشاء Transaction للخزنة التانية (in)
       await Transaction.create(
         {
           safe_id: to_safe_id,
