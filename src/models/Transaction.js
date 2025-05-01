@@ -82,10 +82,16 @@ Safe.hasMany(Transaction, { foreignKey: "safe_id" });
 Transaction.belongsTo(Safe, { foreignKey: "safe_id" });
 
 Currency.hasMany(Transaction, { foreignKey: "currency_id_from" });
-Transaction.belongsTo(Currency, { foreignKey: "currency_id_from" });
+Transaction.belongsTo(Currency, {
+  foreignKey: "currency_id_from",
+  as: "currency_from",
+});
 
 Currency.hasMany(Transaction, { foreignKey: "currency_id_to" });
-Transaction.belongsTo(Currency, { foreignKey: "currency_id_to" });
+Transaction.belongsTo(Currency, {
+  foreignKey: "currency_id_to",
+  as: "currency_to",
+});
 
 Transaction.belongsTo(Transaction, {
   as: "related_transaction",

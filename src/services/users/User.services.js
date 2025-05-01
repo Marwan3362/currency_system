@@ -54,6 +54,8 @@ const registerUser = async (userData) => {
     type: userData.safe_type || "company",
     user_id: user.id,
     branch_id: userData.branch_id || null,
+    company_id: 1,
+
   });
 
   await UserCompany.create({

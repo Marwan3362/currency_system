@@ -7,7 +7,8 @@ import branchRoutes from "./routes/branch.routes.js";
 import transactionRoutes from "./routes/transaction.routes.js";
 import userRoutes from "./routes/fetchUsers.routes.js";
 import currencyRoutes from "./routes/currency.routes.js";
-
+import safeBalanceRoutes from "./routes/safeBalance.routes.js";
+import safeRoutes from "./routes/safe.routes.js";
 
 import i18next from "./config/i18n.js";
 import middleware from "i18next-http-middleware";
@@ -36,7 +37,8 @@ app.use("/api/branches", branchRoutes);
 app.use("/api/", transactionRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/currencies", currencyRoutes);
-
+app.use("/api/balance", safeBalanceRoutes);
+app.use("/api", safeRoutes);
 
 app.get("/welcome", (req, res) => {
   res.json({ message: req.t("welcome") });

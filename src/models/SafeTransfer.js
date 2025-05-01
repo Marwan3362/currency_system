@@ -15,30 +15,21 @@ const SafeTransfer = sequelize.define(
     from_safe_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: Safe,
-        key: "id",
-      },
+      references: { model: Safe, key: "id" },
     },
     to_safe_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: Safe,
-        key: "id",
-      },
+      references: { model: Safe, key: "id" },
     },
     amount: {
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
     },
     currency_id: {
-      type: DataTypes.STRING(10), 
+      type: DataTypes.STRING(10),
       allowNull: false,
-      references: {
-        model: Currency,
-        key: "code",
-      },
+      references: { model: Currency, key: "code" },
     },
     date: {
       type: DataTypes.DATEONLY,
@@ -47,6 +38,11 @@ const SafeTransfer = sequelize.define(
     description: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM("pending", "approved", "rejected"),
+      allowNull: false,
+      defaultValue: "pending",
     },
   },
   {
@@ -61,4 +57,8 @@ Transaction.belongsTo(SafeTransfer, { foreignKey: "related_transfer_id" });
 Safe.hasMany(SafeTransfer, { foreignKey: "from_safe_id" });
 Safe.hasMany(SafeTransfer, { foreignKey: "to_safe_id" });
 
+SafeTransfer.belongsTo(Safe, { foreignKey: "from_safe_id", as: "fromSafe" });
+SafeTransfer.belongsTo(Safe, { foreignKey: "to_safe_id", as: "toSafe" });
+
 export default SafeTransfer;
+
