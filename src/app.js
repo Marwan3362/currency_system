@@ -5,6 +5,9 @@ import authRoutes from "./routes/auth.routes.js";
 import companyRoutes from "./routes/company.routers.js";
 import branchRoutes from "./routes/branch.routes.js";
 import transactionRoutes from "./routes/transaction.routes.js";
+import userRoutes from "./routes/fetchUsers.routes.js";
+import currencyRoutes from "./routes/currency.routes.js";
+
 
 import i18next from "./config/i18n.js";
 import middleware from "i18next-http-middleware";
@@ -31,6 +34,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/branches", branchRoutes);
 app.use("/api/", transactionRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/currencies", currencyRoutes);
+
 
 app.get("/welcome", (req, res) => {
   res.json({ message: req.t("welcome") });

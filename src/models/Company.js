@@ -1,8 +1,5 @@
 import { DataTypes } from "sequelize";
-// import sequelize from "../../config/db.js";
 import sequelize from "../config/db.js";
-
-import User from "./user/User.js";
 
 const Company = sequelize.define(
   "Company",
@@ -58,14 +55,19 @@ const Company = sequelize.define(
   }
 );
 
-Company.belongsTo(User, {
-  foreignKey: "owner_id",
-  as: "owner",
-});
+const associateUser = async () => {
+  const { default: User } = await import("./user/User.js"); 
+  Company.belongsTo(User, {
+    foreignKey: "owner_id",
+    as: "owner",
+  });
 
-User.hasMany(Company, {
-  foreignKey: "owner_id",
-  as: "owned_companies",
-});
+  User.hasMany(Company, {
+    foreignKey: "owner_id",
+    as: "owned_companies",
+  });
+};
+
+associateUser();
 
 export default Company;

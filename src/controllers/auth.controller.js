@@ -1,18 +1,30 @@
 import authService from "../services/users/User.services.js";
 import Role from "../models/user/Role.js";
+
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, phone, role_id, safe_type} = req.body;
+    const {
+      name,
+      email,
+      password,
+      phone,
+      role_id,
+      safe_type,
+      company_id,
+      branch_id,
+    } = req.body;
     const avatar = req.file ? `/uploads/${req.file.filename}` : null;
 
-    const user = await authService.registerUser({
+    const { user, safe_id } = await authService.registerUser({
       name,
       email,
       password,
       phone,
       avatar,
       role_id,
-      safe_type
+      safe_type,
+      company_id,
+      branch_id,
     });
 
     res.status(201).json({
@@ -26,6 +38,8 @@ export const signup = async (req, res) => {
         role: user.Role.name,
         is_active: user.is_active,
         createdAt: user.createdAt,
+        safe_id, // إرجاع safe_id مع المستخدم
+        branch_id, // إرجاع branch_id مع المستخدم
       },
     });
   } catch (error) {
@@ -33,9 +47,13 @@ export const signup = async (req, res) => {
   }
 };
 
+// دالة لتسجيل دخول المستخدم
 export const login = async (req, res) => {
   try {
-    const { user, token } = await authService.loginUser(req.body);
+    const { user, safe_id, branch_id, token } = await authService.loginUser(
+      req.body
+    );
+
     res.json({
       message: "Login successful",
       user: {
@@ -47,6 +65,8 @@ export const login = async (req, res) => {
         role: user.Role.name,
         is_active: user.is_active,
         createdAt: user.createdAt,
+        safe_id, 
+        branch_id, 
       },
       token,
     });
@@ -63,3 +83,5 @@ export const getRole = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+

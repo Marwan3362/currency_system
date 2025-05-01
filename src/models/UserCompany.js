@@ -1,8 +1,10 @@
+
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
-import User from "./user/User.js";
 import Company from "./Company.js";
+import Branch from "./Branch.js";
 
+// تعريف النموذج UserCompany
 const UserCompany = sequelize.define(
   "UserCompany",
   {
@@ -10,7 +12,7 @@ const UserCompany = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: User,
+        model: "users",
         key: "id",
       },
       onUpdate: "CASCADE",
@@ -26,6 +28,16 @@ const UserCompany = sequelize.define(
       onUpdate: "CASCADE",
       onDelete: "RESTRICT",
     },
+    branch_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: Branch,
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "RESTRICT",
+    },
   },
   {
     timestamps: false,
@@ -33,16 +45,18 @@ const UserCompany = sequelize.define(
   }
 );
 
-User.belongsToMany(Company, {
-  through: UserCompany,
-  foreignKey: "user_id",
-  as: "companies",
-});
+const associateUser = async () => {
+  const { default: User } = await import("./user/User.js");
+  User.hasMany(UserCompany, { foreignKey: "user_id" });
+  UserCompany.belongsTo(User, { foreignKey: "user_id" });
+};
 
-Company.belongsToMany(User, {
-  through: UserCompany,
-  foreignKey: "company_id",
-  as: "users",
-});
+associateUser();
+
+Company.hasMany(UserCompany, { foreignKey: "company_id" });
+UserCompany.belongsTo(Company, { foreignKey: "company_id" });
+
+Branch.hasMany(UserCompany, { foreignKey: "branch_id", as: "branchDetails" }); 
+UserCompany.belongsTo(Branch, { foreignKey: "branch_id", as: "branchDetails" });
 
 export default UserCompany;

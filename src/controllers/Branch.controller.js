@@ -1,6 +1,6 @@
 // controllers/branch.controller.js
 import bulkCreateBranchSchema from "../validations/Branch.validation.js";
-import { createBranches } from "../services/Branch.service.js";
+import { createBranches, getBranchesByCompanyId } from "../services/Branch.service.js";
 
 export const bulkCreateBranchHandler = async (req, res) => {
   try {
@@ -25,6 +25,32 @@ export const bulkCreateBranchHandler = async (req, res) => {
     }
 
     console.error("Error creating branches:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
+};
+
+export const getBranchesByCompanyIdHandler = async (req, res) => {
+  try {
+    const companyId = req.params.companyId; 
+    const branches = await getBranchesByCompanyId(companyId);
+
+    if (!branches || branches.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No branches found for company ID ${companyId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: branches,
+      message: "Branches fetched successfully",
+    });
+  } catch (err) {
+    console.error("Error fetching branches:", err);
     return res.status(500).json({
       success: false,
       message: "Something went wrong",
