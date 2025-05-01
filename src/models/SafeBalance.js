@@ -36,6 +36,12 @@ const SafeBalance = sequelize.define(
   {
     timestamps: true,
     tableName: "safe_balances",
+    indexes: [
+      {
+        unique: true,
+        fields: ["safe_id", "currency_id"],
+      },
+    ],
   }
 );
 
