@@ -35,7 +35,6 @@ const Transaction = sequelize.define(
         model: Currency,
         key: "code",
       },
-      comment: "العملة المستقبلة",
     },
     type: {
       type: DataTypes.ENUM("in", "out"),
@@ -70,6 +69,14 @@ const Transaction = sequelize.define(
         model: User,
         key: "id",
       },
+    },
+    exchange_type: {
+      type: DataTypes.ENUM("buy", "sell"),
+      allowNull: true,
+    },
+    client_phone: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
     },
   },
   {

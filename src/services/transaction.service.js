@@ -20,9 +20,11 @@ class TransactionService {
         },
       });
 
-      const result = response.data?.result;
+      const raw = response.data?.result;
 
-      if (!result) {
+      const result = Number(parseFloat(raw).toFixed(2));
+
+      if (!result || isNaN(result)) {
         throw new Error("فشل في جلب سعر التحويل من API");
       }
 
@@ -43,6 +45,8 @@ class TransactionService {
       description,
       user_id,
       date,
+      exchange_type,
+      client_phone,
     } = data;
 
     const t = await sequelize.transaction();
@@ -51,22 +55,31 @@ class TransactionService {
       const safe = await Safe.findByPk(safe_id, { transaction: t });
       if (!safe) throw new Error("الخزنة غير موجودة");
 
-      const convertedAmount = await this.getConvertedAmount(
+      const rawConverted = await this.getConvertedAmount(
         currency_id_from,
         currency_id_to,
         amount
       );
+
+      const convertedAmount = Number(parseFloat(rawConverted).toFixed(2));
+      const fixedAmount = Number(parseFloat(amount).toFixed(2));
+
+      if (isNaN(convertedAmount) || isNaN(fixedAmount)) {
+        throw new Error("القيمة المحوّلة أو المبلغ غير صالح");
+      }
 
       const transaction = await Transaction.create(
         {
           safe_id,
           currency_id_from,
           currency_id_to,
-          amount,
+          amount: fixedAmount,
           type,
           description,
           user_id,
           date,
+          exchange_type,
+          client_phone,
           converted_amount: convertedAmount,
         },
         { transaction: t }
@@ -78,12 +91,35 @@ class TransactionService {
           transaction: t,
         });
 
-        if (!fromBalance || fromBalance.amount < amount) {
-          throw new Error("الرصيد غير كافي في الخزنة المصدر");
+        if (!fromBalance || Number(fromBalance.amount) < fixedAmount) {
+          throw new Error("الرصيد غير كافي في العملة المصدر");
         }
 
-        fromBalance.amount -= amount;
+        fromBalance.amount = Number(
+          (Number(fromBalance.amount) - fixedAmount).toFixed(2)
+        );
         await fromBalance.save({ transaction: t });
+
+        let toBalance = await SafeBalance.findOne({
+          where: { safe_id, currency_id: currency_id_to },
+          transaction: t,
+        });
+
+        if (!toBalance) {
+          await SafeBalance.create(
+            {
+              safe_id,
+              currency_id: currency_id_to,
+              amount: convertedAmount,
+            },
+            { transaction: t }
+          );
+        } else {
+          toBalance.amount = Number(
+            (Number(toBalance.amount) + convertedAmount).toFixed(2)
+          );
+          await toBalance.save({ transaction: t });
+        }
       }
 
       if (type === "in") {
@@ -102,7 +138,9 @@ class TransactionService {
             { transaction: t }
           );
         } else {
-          toBalance.amount += convertedAmount;
+          toBalance.amount = Number(
+            (Number(toBalance.amount) + convertedAmount).toFixed(2)
+          );
           await toBalance.save({ transaction: t });
         }
       }
@@ -113,12 +151,14 @@ class TransactionService {
         id: transaction.id,
         safe_id,
         type,
-        amount,
+        amount: fixedAmount,
         currency_from: currency_id_from,
         currency_to: currency_id_to,
         converted_amount: convertedAmount,
         description,
         date,
+        exchange_type,
+        client_phone,
         user_id,
         created_at: transaction.createdAt,
       };

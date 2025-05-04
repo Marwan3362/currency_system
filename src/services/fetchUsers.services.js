@@ -63,18 +63,40 @@ export const getAllOwnerBranches = async () => {
   });
 };
 
+// export const getAllCustomers = async () => {
+//   return await User.findAll({
+//     attributes: ["id", "name", "email", "phone"],
+//     where: { is_active: true },
+//     include: [
+//       {
+//         model: Role,
+//         where: { name: "Customer" },
+//         attributes: ["name"],
+//       },
+//     ],
+//   });
+// };
+
 export const getAllCustomers = async () => {
-  return await User.findAll({
-    attributes: ["id", "name", "email"],
+  const users = await User.findAll({
+    attributes: ["id", "name", "email", "phone"],
     where: { is_active: true },
     include: [
       {
         model: Role,
-        where: { name: "Customer" },
         attributes: ["name"],
+        where: { name: "Customer" },
       },
     ],
   });
+
+  return users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.Role.name,
+  }));
 };
 
 export const getCustomerByPhone = async (userPhone) => {

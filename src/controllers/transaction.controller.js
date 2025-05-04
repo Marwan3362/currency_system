@@ -64,12 +64,10 @@ class TransactionController {
       res.status(200).json({ user_id, transactions });
     } catch (error) {
       console.error(error);
-      res
-        .status(500)
-        .json({
-          message: "Failed to fetch transactions",
-          error: error.message,
-        });
+      res.status(500).json({
+        message: "Failed to fetch transactions",
+        error: error.message,
+      });
     }
   }
 }
