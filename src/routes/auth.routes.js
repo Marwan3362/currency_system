@@ -7,7 +7,7 @@ import { createCompanyWithOwner } from "../controllers/company.controller.js";
 const router = express.Router();
 router.post(
   "/signup",
-  authorizeRoles("Admin", "Company Owner", "Branch Manager"),
+  // authorizeRoles("Admin", "Company Owner", "Branch Manager"),
   upload.single("avatar"),
   signup
 );

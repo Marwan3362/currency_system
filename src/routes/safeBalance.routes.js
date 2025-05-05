@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post(
   "/safe-balance",
-  // authorizeRoles("Admin", "Company Owner"),
+  authorizeRoles("Admin", "Company Owner"),
   SafeBalanceController.upsertBalance
 );
 
