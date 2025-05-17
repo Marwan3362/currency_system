@@ -70,6 +70,14 @@ const Transaction = sequelize.define(
         key: "id",
       },
     },
+    created_by: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+    },
     exchange_type: {
       type: DataTypes.ENUM("buy", "sell"),
       allowNull: true,
@@ -106,6 +114,15 @@ Transaction.belongsTo(Transaction, {
 });
 
 User.hasMany(Transaction, { foreignKey: "user_id" });
-Transaction.belongsTo(User, { foreignKey: "user_id" });
+Transaction.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+User.hasMany(Transaction, { 
+  foreignKey: "created_by",
+  as: "createdTransactions" 
+});
+Transaction.belongsTo(User, { 
+  foreignKey: "created_by",
+  as: "creator" 
+});
 
 export default Transaction;

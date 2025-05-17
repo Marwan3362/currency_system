@@ -4,6 +4,8 @@ import { createTransactionSchema } from "../validations/Transaction.validation.j
 import Transaction from "../models/Transaction.js";
 import Currency from "../models/Currency.js";
 import Safe from "../models/Safe.js";
+import User from "../models/user/User.js";
+import Role from "../models/user/Role.js";
 
 class TransactionController {
   static async createTransaction(req, res) {
@@ -14,7 +16,8 @@ class TransactionController {
       });
 
       const transaction = await TransactionService.createTransaction(
-        validatedData
+        validatedData,
+        req.user.id,
       );
 
       res.status(201).json({ transaction });
@@ -37,31 +40,58 @@ class TransactionController {
 
   static async getTransactionsByUser(req, res) {
     try {
-      const { user_id } = req.body;
+      const userId = req.user.id;
 
-      if (!user_id) {
+      if (!userId) {
         return res.status(400).json({ message: "user_id is required" });
       }
 
       const transactions = await Transaction.findAll({
-        where: { user_id },
+        where: { created_by: userId },
         include: [
           {
             model: Currency,
             as: "currency_from",
-            attributes: ["code", "name", "name_ar", "symbol"],
+            attributes: ["code", "name", "name_ar", "symbol", "exchange_rate"],
           },
           {
             model: Currency,
             as: "currency_to",
-            attributes: ["code", "name", "name_ar", "symbol"],
+            attributes: ["code", "name", "name_ar", "symbol", "exchange_rate"],
+          },
+          {
+            model: User,
+            as: "creator",
+            attributes: ["id", "name", "email", "phone", "avatar", "is_active"],
+            include: [{
+              model: Role,
+              attributes: ["name"]
+            }]
+          },
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "name", "email", "phone", "avatar", "is_active"],
+            include: [{
+              model: Role,
+              attributes: ["name"]
+            }]
           },
           { model: Safe, attributes: ["id", "name", "type"] },
         ],
         order: [["date", "DESC"]],
       });
 
-      res.status(200).json({ user_id, transactions });
+      // Format response with user data mapped
+      // const response = {
+      //   user_id: userId,
+      //   transactions: transactions.map(transaction => ({
+      //     ...transaction.toJSON(),
+      //     creator: transaction.creator, // creator data
+      //   }))
+      // };
+
+      res.status(200).json({ userId, transactions });
     } catch (error) {
       console.error(error);
       res.status(500).json({

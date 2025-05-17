@@ -9,7 +9,7 @@ class SafeController {
           {
             model: User,
             as: "userSafe",
-            attributes: ["id", "name", "email"],
+            attributes: ["id", "name", "email", "phone", "avatar", "is_active"],
           },
         ],
         order: [["createdAt", "DESC"]],

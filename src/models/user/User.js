@@ -53,6 +53,23 @@ const User = sequelize.define(
   {
     timestamps: true,
     tableName: "users",
+    // getterMethods: {
+    //   role() {
+    //     return this.Role?.name;
+    //   }
+    // },
+    // hooks: {
+    //   afterFind: (users) => {
+    //     if (!Array.isArray(users)) {
+    //       users = [users];
+    //     }
+    //     for (const user of users) {
+    //       if (user?.Role) {
+    //         user.dataValues.role = user.Role.name;
+    //       }
+    //     }
+    //   }
+    // }
   }
 );
 

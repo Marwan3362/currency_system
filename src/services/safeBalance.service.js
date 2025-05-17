@@ -24,7 +24,7 @@ class SafeBalanceService {
       include: [
         {
           model: Currency,
-          attributes: ["code", "name", "name_ar", "symbol"],
+          attributes: ["code", "name", "name_ar", "symbol", "exchange_rate"],
         },
       ],
       order: [["currency_id", "ASC"]],

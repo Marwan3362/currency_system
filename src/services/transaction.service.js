@@ -35,7 +35,7 @@ class TransactionService {
     }
   }
 
-  static async createTransaction(data) {
+  static async createTransaction(data, createdById) {
     const {
       safe_id,
       currency_id_from,
@@ -81,6 +81,7 @@ class TransactionService {
           exchange_type,
           client_phone,
           converted_amount: convertedAmount,
+          created_by: createdById,
         },
         { transaction: t }
       );
@@ -160,6 +161,7 @@ class TransactionService {
         exchange_type,
         client_phone,
         user_id,
+        created_by: createdById,
         created_at: transaction.createdAt,
       };
     } catch (error) {

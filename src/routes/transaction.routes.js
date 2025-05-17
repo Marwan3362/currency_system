@@ -11,6 +11,12 @@ router.post(
   TransactionController.createTransaction
 );
 
+router.get(
+  "/transactions",
+  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
+  TransactionController.getTransactionsByUser
+);
+
 router.post(
   "/safe-transfer",
   authorizeRoles("Admin", "Company Owner", "Branch Manager"),
