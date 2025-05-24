@@ -19,5 +19,7 @@ COPY . .
 # Give execution permission to wait script
 RUN chmod +x ./wait-for-mysql.sh
 
+EXPOSE 3000
+
 # Run app after waiting for MySQL
 CMD ["./wait-for-mysql.sh", "npm", "run", "dev"]
