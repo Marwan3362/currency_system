@@ -38,8 +38,8 @@ export const signup = async (req, res) => {
         role: user.Role.name,
         is_active: user.is_active,
         createdAt: user.createdAt,
-        safe_id, // إرجاع safe_id مع المستخدم
-        branch_id, // إرجاع branch_id مع المستخدم
+        safe_id, 
+        branch_id,
       },
     });
   } catch (error) {
@@ -47,7 +47,6 @@ export const signup = async (req, res) => {
   }
 };
 
-// دالة لتسجيل دخول المستخدم
 export const login = async (req, res) => {
   try {
     const { user, safe_id, branch_id, token } = await authService.loginUser(

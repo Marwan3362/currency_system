@@ -15,4 +15,4 @@ RUN chmod +x ./wait-for-mysql.sh
 
 EXPOSE 3000
 
-CMD ["./wait-for-mysql.sh", "db", "3306", "npm", "run", "dev"]
+CMD ["./wait-for-mysql.sh", "containers-your-db-host.railway.app", "3306", "npm", "run", "dev"]
