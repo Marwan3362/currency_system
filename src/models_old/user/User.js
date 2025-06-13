@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../../config/db.js";
+import sequelize from "../../config_old/db.js";
 import Role from "./Role.js";
 import Safe from "../Safe.js"; 
 import UserCompany from "../UserCompany.js"; 

@@ -1,8 +1,8 @@
 import axios from "axios";
-import sequelize from "../config/db.js";
-import Transaction from "../models/Transaction.js";
-import SafeBalance from "../models/SafeBalance.js";
-import Safe from "../models/Safe.js";
+import sequelize from "../config_old/db.js";
+import Transaction from "../models_old/Transaction.js";
+import SafeBalance from "../models_old/SafeBalance.js";
+import Safe from "../models_old/Safe.js";
 
 const API_KEY = "8939f69a54818d490aacd2fdc98f10a8";
 

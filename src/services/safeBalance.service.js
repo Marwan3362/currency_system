@@ -1,5 +1,5 @@
-import SafeBalance from "../models/SafeBalance.js";
-import Currency from "../models/Currency.js";
+import SafeBalance from "../models_old/SafeBalance.js";
+import Currency from "../models_old/Currency.js";
 
 class SafeBalanceService {
   static async upsertBalance({ safe_id, currency_id, amount }) {

@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import Company from "../models/Company.js";
+import Company from "../models_old/Company.js";
 
 export const createCompanyValidation = Yup.object({
   name: Yup.string()

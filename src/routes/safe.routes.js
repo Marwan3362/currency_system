@@ -1,25 +1,41 @@
 import express from "express";
-import SafeController from "../controllers/safe.controller.js";
+import {
+  fetchAllSafes,
+  fetchSafeById,
+  fetchSafeByUserId,
+  fetchSafeWithBalances,
+} from "../controllers/safe.controller.js";
+import { authenticateToken } from "../middlewares/authenticateToken.js";
 import { authorizeRoles } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.get(
-  "/safes",
-  authorizeRoles("Admin", "Company Owner"),
-  SafeController.getAllSafes
+  "/",
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
+  fetchAllSafes
 );
 
-router.post(
-  "/safes/by-user",
-  authorizeRoles("Admin", "Company Owner"),
-  SafeController.getSafeByUserId
+router.get(
+  "/:safeId",
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
+  fetchSafeById
 );
 
-router.post(
-  "/safes/by-branch",
-  authorizeRoles("Admin", "Company Owner", "Branch Manager"),
-  SafeController.getSafesByBranchId
+router.get(
+  "/by-user/:userId",
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
+  fetchSafeByUserId
+);
+
+router.get(
+  "/:safeId/balances",
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
+  fetchSafeWithBalances
 );
 
 export default router;

@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
+import sequelize from "../config_old/db.js";
 import Transaction from "./Transaction.js";
 import Safe from "./Safe.js";
 import Currency from "./Currency.js";

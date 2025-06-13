@@ -1,6 +1,9 @@
 // services/branch.service.js
-import Branch from "../models/Branch.js";
+// import Branch from "../models_old/Branch.js";
 
+import db from "../models/index.js";
+
+const { Branch } = db;
 export const createBranches = async (branches) => {
   const createdBranches = await Branch.bulkCreate(branches);
   return createdBranches;

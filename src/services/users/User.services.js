@@ -1,106 +1,87 @@
+import db from "../../models/index.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import User from "../../models/user/User.js";
-import Role from "../../models/user/Role.js";
-import Safe from "../../models/Safe.js";
-import UserCompany from "../../models/UserCompany.js";
-import Branch from "../../models/Branch.js";
-
+import { roleNames, hasPermission } from "../../utils/permissions.js";
 import {
   signupSchema,
   loginSchema,
 } from "../../validations/auth.validation.js";
 
-const generateToken = (user) => {
-  return jwt.sign(
-    { id: user.id, email: user.email, role: user.Role.name },
-    process.env.JWT_SECRET,
-    { expiresIn: "9h" }
-  );
-};
+const { User, Safe, Role } = db;
 
-const registerUser = async (userData) => {
+export const createUserWithSafe = async (userData, creator) => {
+  const { name, email, password, role_id, branch_id, company_id } = userData;
   await signupSchema.validate(userData);
 
+  const newRole = await Role.findByPk(role_id);
+  if (!newRole) throw new Error("Target role not found");
   const existingUser = await User.findOne({ where: { email: userData.email } });
   if (existingUser) throw new Error("Email already exists");
   const existingPhone = await User.findOne({
     where: { phone: userData.phone },
   });
   if (existingPhone) throw new Error("Phone is already exists");
-  if (userData.branch_id) {
-    const branch = await Branch.findOne({ where: { id: userData.branch_id } });
-    if (!branch) throw new Error("Branch not found");
+  const creatorRoleName = roleNames[creator.role];
+  const targetRoleName = roleNames[role_id];
+
+  // Allow Admin to create any role
+  if (creatorRoleName !== "Admin" && !hasPermission(creator.role, role_id)) {
+    throw new Error(
+      `Not authorized to assign role "${targetRoleName}" by "${creatorRoleName}"`
+    );
   }
 
-  userData.password = await bcrypt.hash(userData.password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await User.create({
-    name: userData.name,
-    email: userData.email,
-    password: userData.password,
-    phone: userData.phone || null,
-    avatar: userData.avatar || null,
-    role_id: userData.role_id || 2,
+  const newUser = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role_id,
+    branch_id: creatorRoleName === "Admin" ? branch_id : creator.branch_id,
+    company_id: creatorRoleName === "Admin" ? company_id : creator.company_id,
   });
 
-  await user.reload({ include: [{ model: Role, attributes: ["name"] }] });
-
-  if (userData.role_id == 6) {
-    return { user }; 
-  }
   const safe = await Safe.create({
-    name: `Safe for ${user.name}`,
-    type: userData.safe_type || "company",
-    user_id: user.id,
-    branch_id: userData.branch_id || null,
-    company_id: 1,
-
+    name: `${name}_safe`,
+    user_id: newUser.id,
   });
 
-  await UserCompany.create({
-    user_id: user.id,
-    company_id: 1,
-    branch_id: userData.branch_id || null,
-  });
-
-  return { user, safe_id: safe.id };
+  return {
+    user: {
+      id: newUser.id,
+      email: newUser.email,
+      name: newUser.name,
+      role_id: newUser.role_id,
+      branch_id: newUser.branch_id,
+      company_id: newUser.company_id,
+    },
+    safe_id: safe.id,
+  };
 };
 
-const loginUser = async (userData) => {
-  await loginSchema.validate(userData);
-
+export const authenticateUser = async (email, password) => {
   const user = await User.findOne({
-    where: { email: userData.email },
+    where: { email, is_active: true },
     include: [
-      { model: Role, attributes: ["name"] },
-      { model: Safe, as: "userSafe", attributes: ["id"] },
       {
-        model: UserCompany,
-        include: [
-          { model: Branch, as: "branchDetails", attributes: ["id", "name"] },
-        ],
+        model: Role,
+        attributes: ["id", "name"],
       },
     ],
   });
 
-  if (!user) throw new Error("Invalid email or password");
+  if (!user) return null;
 
-  const isMatch = await bcrypt.compare(userData.password, user.password);
-  if (!isMatch) throw new Error("Invalid email or password");
-
-  const token = generateToken(user);
-
-  const safe_id = user.userSafe ? user.userSafe.id : null;
-  const branch_id =
-    user.UserCompanies.length > 0 ? user.UserCompanies[0].branch_id : null;
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) return null;
 
   return {
-    user,
-    safe_id,
-    branch_id,
-    token,
+    id: user.id,
+    email: user.email,
+    role: user.role_id,
+    roleName: user.Role?.name,
+    branch_id: user.branch_id,
+    company_id: user.company_id,
+    safe_id: user.safe_id,
   };
 };
-
-export default { registerUser, loginUser };

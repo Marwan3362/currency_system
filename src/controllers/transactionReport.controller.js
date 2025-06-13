@@ -1,4 +1,4 @@
-import sequelize from "../config/db.js";
+import sequelize from "../config_old/db.js";
 
 class TransactionReportController {
   static async getUnifiedTransactions(req, res) {

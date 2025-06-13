@@ -9,6 +9,7 @@ export const createCompanyWithOwner = async (req = Request, res = Response) => {
 
     const {
       name,
+      name_ar,
       company_email,
       phone,
       address,
@@ -18,7 +19,7 @@ export const createCompanyWithOwner = async (req = Request, res = Response) => {
     } = req.body;
 
     const { newCompany, newUser } = await createCompanyWithOwnerService(
-      { name, company_email, phone, address },
+      { name, name_ar, company_email, phone, address },
       { name: ownerName, email: ownerEmail, password: ownerPassword }
     );
 

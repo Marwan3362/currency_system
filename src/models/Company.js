@@ -1,73 +1,71 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
+import { Model } from "sequelize";
 
-const Company = sequelize.define(
-  "Company",
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    name_ar: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: true,
-    },
-    company_email: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-        isEmail: true,
-      },
-    },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    is_active: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-    owner_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "users",
-        key: "id",
-      },
-      onUpdate: "CASCADE",
-      onDelete: "RESTRICT",
-    },
-  },
-  {
-    timestamps: true,
-    tableName: "companies",
+export default (sequelize, DataTypes) => {
+  class Company extends Model {
+    static associate(models) {
+      Company.belongsTo(models.User, {
+        foreignKey: "owner_id",
+        as: "owner",
+      });
+
+      models.User.hasMany(Company, {
+        foreignKey: "owner_id",
+        as: "owned_companies",
+      });
+      Company.hasMany(models.Branch, {
+        foreignKey: "company_id",
+        as: "branches",
+      });
+      Company.hasMany(models.AuditLog, {
+        foreignKey: "company_id",
+        as: "audit_logs",
+      });
+    }
   }
-);
 
-const associateUser = async () => {
-  const { default: User } = await import("./user/User.js"); 
-  Company.belongsTo(User, {
-    foreignKey: "owner_id",
-    as: "owner",
-  });
+  Company.init(
+    {
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      name_ar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true,
+      },
+      company_email: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          isEmail: true,
+        },
+      },
+      phone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      owner_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+    },
+    {
+      sequelize,
+      modelName: "Company",
+      tableName: "companies",
+      timestamps: true,
+    }
+  );
 
-  User.hasMany(Company, {
-    foreignKey: "owner_id",
-    as: "owned_companies",
-  });
+  return Company;
 };
-
-associateUser();
-
-export default Company;

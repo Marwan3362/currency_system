@@ -9,4 +9,4 @@ done
 
 echo " MySQL is up and running!"
 
-exec "$@"å
+exec "$@"

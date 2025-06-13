@@ -1,10 +1,9 @@
 
 import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
+import sequelize from "../config_old/db.js";
 import Company from "./Company.js";
 import Branch from "./Branch.js";
 
-// تعريف النموذج UserCompany
 const UserCompany = sequelize.define(
   "UserCompany",
   {

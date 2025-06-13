@@ -1,9 +1,9 @@
 // export default SafeTransferService;
-import sequelize from "../config/db.js";
-import SafeTransfer from "../models/SafeTransfer.js";
-import SafeBalance from "../models/SafeBalance.js";
-import Transaction from "../models/Transaction.js";
-import Safe from "../models/Safe.js";
+import sequelize from "../config_old/db.js";
+import SafeTransfer from "../models_old/SafeTransfer.js";
+import SafeBalance from "../models_old/SafeBalance.js";
+import Transaction from "../models_old/Transaction.js";
+import Safe from "../models_old/Safe.js";
 
 class SafeTransferService {
   static async createTransfer(data) {

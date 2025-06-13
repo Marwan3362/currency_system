@@ -1,8 +1,10 @@
 import bcrypt from "bcryptjs";
-import Company from "../models/Company.js";
-import User from "../models/user/User.js";
-import sequelize from "../config/db.js";
+import sequelize from "../config/db.js"; 
+import { Op } from "sequelize";
 
+import db from "../models/index.js";
+
+const { User, Company } = db;
 export const createCompanyWithOwnerService = async (companyData, ownerData) => {
   const t = await sequelize.transaction();
 
@@ -15,10 +17,12 @@ export const createCompanyWithOwnerService = async (companyData, ownerData) => {
       throw new Error("User with this email already exists");
     }
 
-    // Check if company name already exists
     const existingCompany = await Company.findOne({
-      where: { name: companyData.name },
+      where: {
+        [Op.or]: [{ name: companyData.name }, { name_ar: companyData.name_ar }],
+      },
     });
+
     if (existingCompany) {
       throw new Error("Company with this name already exists");
     }
@@ -32,7 +36,7 @@ export const createCompanyWithOwnerService = async (companyData, ownerData) => {
         name: ownerData.name,
         email: ownerData.email,
         password: hashedPassword,
-        role_id: 3, // You can move this to a constant if needed
+        role_id: 3,
       },
       { transaction: t }
     );
@@ -46,11 +50,9 @@ export const createCompanyWithOwnerService = async (companyData, ownerData) => {
       { transaction: t }
     );
 
-    // Commit transaction
     await t.commit();
 
-    // Simulate sending welcome email
-    console.log(`📧 Welcome email sent to ${newUser.email}`);
+
 
     return { newCompany, newUser };
   } catch (error) {

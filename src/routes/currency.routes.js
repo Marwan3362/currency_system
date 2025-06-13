@@ -1,18 +1,14 @@
-// routes/currency.routes.js
 import express from "express";
 import {
   getAllCurrenciesHandler,
-  updateExchangeRateHandler,
+  updateCurrencyHandler,
   addCurrencyHandler,
 } from "../controllers/currency.controller.js";
 
 const router = express.Router();
 
 router.get("/all", getAllCurrenciesHandler);
-
-
-router.post("/exchange-rate", updateExchangeRateHandler);
-
 router.post("/add", addCurrencyHandler);
+router.post("/update", updateCurrencyHandler);
 
 export default router;

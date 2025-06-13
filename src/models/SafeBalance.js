@@ -1,54 +1,41 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
-import Safe from "./Safe.js";
-import Currency from "./Currency.js";
+import { Model } from "sequelize";
 
-const SafeBalance = sequelize.define(
-  "SafeBalance",
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    safe_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: Safe,
-        key: "id",
-      },
-    },
-    currency_id: {
-      type: DataTypes.STRING(10),
-      allowNull: false,
-      references: {
-        model: Currency,
-        key: "code",
-      },
-    },
-    amount: {
-      type: DataTypes.DECIMAL(15, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-  },
-  {
-    timestamps: true,
-    tableName: "safe_balances",
-    indexes: [
-      {
-        unique: true,
-        fields: ["safe_id", "currency_id"],
-      },
-    ],
+export default (sequelize, DataTypes) => {
+  class SafeBalance extends Model {
+    static associate(models) {
+      SafeBalance.belongsTo(models.Safe, {
+        foreignKey: "safe_id",
+        as: "safe",
+      });
+
+      SafeBalance.belongsTo(models.Currency, {
+        foreignKey: "currency_id",
+        as: "currency",
+      });
+
+      SafeBalance.belongsTo(models.User, {
+        foreignKey: "updated_by",
+        as: "updater",
+      });
+    }
   }
-);
 
-Safe.hasMany(SafeBalance, { foreignKey: "safe_id" });
-SafeBalance.belongsTo(Safe, { foreignKey: "safe_id" });
+  SafeBalance.init(
+    {
+      safe_id: DataTypes.INTEGER,
+      currency_id: DataTypes.INTEGER,
+      balance: {
+        type: DataTypes.FLOAT,
+        defaultValue: 0,
+      },
+      updated_by: DataTypes.INTEGER,
+    },
+    {
+      sequelize,
+      modelName: "SafeBalance",
+      tableName: "safe_balances",
+    }
+  );
 
-Currency.hasMany(SafeBalance, { foreignKey: "currency_id" });
-SafeBalance.belongsTo(Currency, { foreignKey: "currency_id" });
-
-export default SafeBalance;
+  return SafeBalance;
+};

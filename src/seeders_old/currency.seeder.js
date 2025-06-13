@@ -1,4 +1,4 @@
-import Currency from "../models/Currency.js";
+import Currency from "../models_old/Currency.js";
 
 const currencies = [
   {

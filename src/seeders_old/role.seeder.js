@@ -1,4 +1,4 @@
-import Role from "../models/user/Role.js";
+import Role from "../models_old/user/Role.js";
 
 const seedRoles = async () => {
   try {

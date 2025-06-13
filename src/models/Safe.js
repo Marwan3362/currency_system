@@ -1,55 +1,41 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
+import { Model } from "sequelize";
 
-const Safe = sequelize.define(
-  "Safe",
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    name_ar: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    type: {
-      type: DataTypes.ENUM("company", "branch", "teller"),
-      allowNull: false,
-    },
-    company_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    branch_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    user_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      unique: true,
-    },
-    is_active: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-  },
-  {
-    timestamps: true,
-    tableName: "safes",
+export default (sequelize, DataTypes) => {
+  class Safe extends Model {
+    static associate(models) {
+      Safe.belongsTo(models.User, {
+        foreignKey: "user_id",
+        as: "owner",
+      });
+
+      Safe.hasMany(models.SafeBalance, {
+        foreignKey: "safe_id",
+        as: "balances",
+      });
+
+      Safe.hasMany(models.SafeDailyBalance, {
+        foreignKey: "safe_id",
+        as: "daily_balances",
+      });
+    }
   }
-);
 
-const associateUser = async () => {
-  const { default: User } = await import("./user/User.js");
-  Safe.belongsTo(User, { foreignKey: "user_id", as: "userSafe" }); 
+  Safe.init(
+    {
+      name: DataTypes.STRING,
+      name_ar: DataTypes.STRING,
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      user_id: DataTypes.INTEGER,
+    },
+    {
+      sequelize,
+      modelName: "Safe",
+      tableName: "safes",
+    }
+  );
+
+  return Safe;
 };
-
-associateUser();
-
-export default Safe;

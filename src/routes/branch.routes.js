@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post(
   "/bulk",
-  authorizeRoles("Admin", "Company Owner"),
+  // authorizeRoles("Admin", "Company Owner"),
   bulkCreateBranchHandler
 );
 
