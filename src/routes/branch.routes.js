@@ -1,23 +1,25 @@
-// routes/branch.routes.js
 import express from "express";
 import {
   bulkCreateBranchHandler,
   getBranchesByCompanyIdHandler,
 } from "../controllers/Branch.controller.js";
+import { authenticateToken } from "../middlewares/authenticateToken.js";
 import { authorizeRoles } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.post(
   "/bulk",
-  // authorizeRoles("Admin", "Company Owner"),
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner"),
   bulkCreateBranchHandler
 );
 
-export default router;
-
 router.get(
   "/company/:companyId",
+  authenticateToken,
   authorizeRoles("Admin", "Company Owner"),
   getBranchesByCompanyIdHandler
 );
+
+export default router;

@@ -1,7 +1,4 @@
-/**
- * Middleware لتحديد الوظائف اللي يقدر يوصلها المستخدم بناءً على الدور
- * Example: authorizeRoles("Admin", "Branch Manager")
- */
+
 export const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     const user = req.user;

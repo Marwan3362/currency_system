@@ -5,7 +5,7 @@ import {
   signupSchema,
   loginSchema,
 } from "../../validations/auth.validation.js";
-
+import sequelize from "../../config/db.js";
 const { User, Safe, Role } = db;
 
 export const createUserWithSafe = async (userData, creator) => {
@@ -22,6 +22,7 @@ export const createUserWithSafe = async (userData, creator) => {
   if (existingPhone) throw new Error("Phone is already exists");
   const creatorRoleName = roleNames[creator.role];
   const targetRoleName = roleNames[role_id];
+  console.log(creatorRoleName);
 
   // Allow Admin to create any role
   if (creatorRoleName !== "Admin" && !hasPermission(creator.role, role_id)) {
@@ -29,34 +30,58 @@ export const createUserWithSafe = async (userData, creator) => {
       `Not authorized to assign role "${targetRoleName}" by "${creatorRoleName}"`
     );
   }
+  let assignedBranchId;
+  if (creatorRoleName === "Admin") {
+    assignedBranchId = branch_id;
+  } else if (creatorRoleName === "Company Owner") {
+    if (!branch_id) throw new Error("Company Owner must provide a branch_id");
+    assignedBranchId = branch_id;
+  } else {
+    assignedBranchId = creator.branch_id;
+  }
 
   const hashedPassword = await bcrypt.hash(password, 10);
+  const transaction = await sequelize.transaction();
 
-  const newUser = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    role_id,
-    branch_id: creatorRoleName === "Admin" ? branch_id : creator.branch_id,
-    company_id: creatorRoleName === "Admin" ? company_id : creator.company_id,
-  });
+  try {
+    const newUser = await User.create(
+      {
+        name,
+        email,
+        password: hashedPassword,
+        role_id,
+        branch_id: assignedBranchId,
+        company_id:
+          creatorRoleName === "Admin" ? company_id : creator.company_id,
+      },
+      { transaction }
+    );
 
-  const safe = await Safe.create({
-    name: `${name}_safe`,
-    user_id: newUser.id,
-  });
+    const safe = await Safe.create(
+      {
+        name: `${name}_safe`,
+        user_id: newUser.id,
+      },
+      { transaction }
+    );
 
-  return {
-    user: {
-      id: newUser.id,
-      email: newUser.email,
-      name: newUser.name,
-      role_id: newUser.role_id,
-      branch_id: newUser.branch_id,
-      company_id: newUser.company_id,
-    },
-    safe_id: safe.id,
-  };
+    await transaction.commit();
+
+    return {
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role_id: newUser.role_id,
+        branch_id: newUser.branch_id,
+        company_id: newUser.company_id,
+      },
+      safe_id: safe.id,
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 export const authenticateUser = async (email, password) => {
@@ -66,6 +91,11 @@ export const authenticateUser = async (email, password) => {
       {
         model: Role,
         attributes: ["id", "name"],
+      },
+      {
+        model: Safe,
+        as: "Safe",
+        attributes: ["id"],
       },
     ],
   });
@@ -82,6 +112,6 @@ export const authenticateUser = async (email, password) => {
     roleName: user.Role?.name,
     branch_id: user.branch_id,
     company_id: user.company_id,
-    safe_id: user.safe_id,
+    safe_id: user.Safe?.id,
   };
 };

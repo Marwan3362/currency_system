@@ -22,6 +22,10 @@ export default (sequelize, DataTypes) => {
         foreignKey: "user_id",
         as: "audit_logs",
       });
+      User.hasOne(models.Safe, {
+        foreignKey: "user_id",
+        as: "Safe",
+      });
     }
   }
 

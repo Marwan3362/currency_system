@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import sequelize from "../config/db.js"; 
+import sequelize from "../config/db.js";
 import { Op } from "sequelize";
 
 import db from "../models/index.js";
@@ -49,10 +49,9 @@ export const createCompanyWithOwnerService = async (companyData, ownerData) => {
       },
       { transaction: t }
     );
+    await newUser.update({ company_id: newCompany.id }, { transaction: t });
 
     await t.commit();
-
-
 
     return { newCompany, newUser };
   } catch (error) {
