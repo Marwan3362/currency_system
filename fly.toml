@@ -1,7 +1,7 @@
-app = "currency-system-app"  # اسم فريد لازم يكون غير مستخدم
+app = "currency-system-app"  
 
-primary_region = "fra"  # ممكن تغيرها حسب أقرب مكان ليك (ams, lhr, sin, etc)
-
+primary_region = "fra" 
+\
 [build]
   dockerfile = "Dockerfile"
 

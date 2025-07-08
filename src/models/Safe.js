@@ -8,6 +8,11 @@ export default (sequelize, DataTypes) => {
         as: "owner",
       });
 
+      Safe.belongsTo(models.User, {
+        foreignKey: "user_id",
+        as: "owner_for_to",
+      });
+
       Safe.hasMany(models.SafeBalance, {
         foreignKey: "safe_id",
         as: "balances",
@@ -16,6 +21,16 @@ export default (sequelize, DataTypes) => {
       Safe.hasMany(models.SafeDailyBalance, {
         foreignKey: "safe_id",
         as: "daily_balances",
+      });
+
+      Safe.hasMany(models.Transaction, {
+        foreignKey: "from_safe_id",
+        as: "sent_transactions",
+      });
+
+      Safe.hasMany(models.Transaction, {
+        foreignKey: "to_safe_id",
+        as: "received_transactions",
       });
     }
   }

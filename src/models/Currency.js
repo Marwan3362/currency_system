@@ -3,6 +3,15 @@ import { Model, DataTypes } from "sequelize";
 export default (sequelize) => {
   class Currency extends Model {
     static associate(models) {
+      Currency.hasMany(models.Transaction, {
+        foreignKey: "from_currency_id",
+        as: "transactions_from",
+      });
+
+      Currency.hasMany(models.Transaction, {
+        foreignKey: "to_currency_id",
+        as: "transactions_to",
+      });
     }
   }
 

@@ -101,9 +101,13 @@ export const authenticateUser = async (email, password) => {
   });
 
   if (!user) return null;
+    // if (user.is_login === true) {
+    //   throw new Error("User already logged in");
+    // }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return null;
+  await User.update({ is_login: true }, { where: { id: user.id } });
 
   return {
     id: user.id,
@@ -114,4 +118,51 @@ export const authenticateUser = async (email, password) => {
     company_id: user.company_id,
     safe_id: user.Safe?.id,
   };
+};
+
+export const createCustomer = async (data) => {
+  const { name, email, phone, company_id, branch_id } = data;
+  const hashedPassword = await bcrypt.hash("P@ssw0rd", 10);
+  // Check for duplicate phone
+  const existing = await User.findOne({ where: { phone } });
+  if (existing) throw new Error("Customer with this phone already exists");
+
+  const newCustomer = await User.create({
+    name,
+    email,
+    phone,
+    password: hashedPassword,
+    role_id: 6,
+    company_id,
+    branch_id,
+  });
+
+  return {
+    name: newCustomer.name,
+    email: newCustomer.email,
+  };
+};
+
+export const getCustomerByPhone = async (phone) => {
+  const customer = await User.findOne({
+    where: { phone, role_id: 6 },
+    attributes: ["id", "name", "email", "phone", "company_id", "branch_id"],
+  });
+
+  if (!customer) throw new Error("Customer not found");
+
+  return customer;
+};
+export const logoutUser = async (userId) => {
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error("User not found");
+
+  if (!user.is_login) {
+    throw new Error("User is already logged out");
+  }
+
+  user.is_login = false;
+  await user.save();
+
+  return true;
 };

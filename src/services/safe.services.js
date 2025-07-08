@@ -13,7 +13,7 @@ const applyRoleAccessFilter = (roleName, branch_id, company_id, user_id) => {
     if (!company_id) return null;
     whereClause["$owner.company_id$"] = company_id;
   } else {
-    return null; 
+    return null;
   }
 
   return whereClause;
@@ -153,4 +153,44 @@ export const getSafeWithBalances = async (
       },
     ],
   });
+};
+export const addBalanceToUserSafe = async (
+  { user_id, currency_id, amount },
+  adminUser
+) => {
+  if (
+    adminUser.roleName !== "Admin" &&
+    adminUser.roleName !== "Company Owner"
+  ) {
+    throw new Error("Only Admin or Company Owner can perform this action");
+  }
+
+  const user = await User.findByPk(user_id, {
+    include: [{ model: Safe, as: "Safe" }],
+  });
+
+  if (!user || !user.Safe) {
+    throw new Error("User or their Safe not found");
+  }
+
+  const safe_id = user.Safe.id;
+
+  const [safeBalance] = await SafeBalance.findOrCreate({
+    where: { safe_id, currency_id },
+    defaults: {
+      balance: 0,
+      updated_by: adminUser.id,
+    },
+  });
+
+  safeBalance.balance += Number(amount);
+  safeBalance.updated_by = adminUser.id;
+
+  await safeBalance.save();
+
+  return {
+    safe_id,
+    currency_id,
+    new_balance: safeBalance.balance,
+  };
 };

@@ -30,3 +30,48 @@ export const login = async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 };
+
+export const createCustomerHandler = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    const customer = await userService.createCustomer({
+      name,
+      email,
+      phone,
+      company_id: req.user.company_id,
+      branch_id: req.user.branch_id,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Customer created successfully",
+      data: customer,
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+export const getCustomerByPhoneHandler = async (req, res) => {
+  try {
+    const { phone } = req.params;
+
+    const customer = await userService.getCustomerByPhone(phone);
+
+    res.status(200).json({ success: true, data: customer });
+  } catch (err) {
+    res.status(404).json({ success: false, message: err.message });
+  }
+};
+export const logout = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    await userService.logoutUser(userId);
+
+    res.status(200).json({ success: true, message: "Logout successful" });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};

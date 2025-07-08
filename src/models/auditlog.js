@@ -3,19 +3,16 @@ import { Model, DataTypes } from "sequelize";
 export default (sequelize) => {
   class AuditLog extends Model {
     static associate(models) {
-      // ربط مع اليوزر
       AuditLog.belongsTo(models.User, {
         foreignKey: "user_id",
         as: "user",
       });
 
-      // ربط مع الشركة
       AuditLog.belongsTo(models.Company, {
         foreignKey: "company_id",
         as: "company",
       });
 
-      // ربط مع الفرع
       AuditLog.belongsTo(models.Branch, {
         foreignKey: "branch_id",
         as: "branch",

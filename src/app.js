@@ -1,25 +1,18 @@
 import express from "express";
 import dotenv from "dotenv";
-import sequelize from "./config_old/db.js";
+import sequelize from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import companyRoutes from "./routes/company.routers.js";
 import branchRoutes from "./routes/branch.routes.js";
 import transactionRoutes from "./routes/transaction.routes.js";
 import userRoutes from "./routes/fetchUsers.routes.js";
 import currencyRoutes from "./routes/currency.routes.js";
-import safeBalanceRoutes from "./routes/safeBalance.routes.js";
 import safeRoutes from "./routes/safe.routes.js";
-import transactionReportRoutes from "./routes/transactionReport.routes.js";
-
-import i18next from "./config_old/i18n.js";
+import i18next from "./config/i18n.js";
 import middleware from "i18next-http-middleware";
 import cors from "cors";
-import seedRoles from "./seeders_old/role.seeder.js";
-import seedCurrencies from "./seeders_old/currency.seeder.js";
-
 import path from "path";
 import { fileURLToPath } from "url";
-
 import { createServer } from "http";
 import { Server as SocketIO } from "socket.io";
 
@@ -58,12 +51,10 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/branches", branchRoutes);
-app.use("/api/", transactionRoutes);
+app.use("/api/transaction", transactionRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/currencies", currencyRoutes);
-app.use("/api/balance", safeBalanceRoutes);
 app.use("/api/safes", safeRoutes);
-app.use("/api", transactionReportRoutes);
 
 app.get("/welcome", (req, res) => {
   res.json({ message: req.t("welcome") });

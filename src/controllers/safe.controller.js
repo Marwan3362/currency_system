@@ -3,6 +3,7 @@ import {
   getSafeById,
   getSafeByUserId,
   getSafeWithBalances,
+  addBalanceToUserSafe,
 } from "../services/safe.services.js";
 
 export const fetchAllSafes = async (req, res) => {
@@ -83,11 +84,18 @@ export const fetchSafeWithBalances = async (req, res) => {
       .status(200)
       .json({ message: "Safe with balances fetched successfully", safe });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to fetch safe with balances",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to fetch safe with balances",
+      error: error.message,
+    });
+  }
+};
+
+export const addBalanceToSafeHandler = async (req, res) => {
+  try {
+    const result = await addBalanceToUserSafe(req.body, req.user);
+    res.status(200).json({ message: "Balance added successfully", ...result });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 };

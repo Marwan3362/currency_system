@@ -4,6 +4,7 @@ import {
   fetchSafeById,
   fetchSafeByUserId,
   fetchSafeWithBalances,
+  addBalanceToSafeHandler,
 } from "../controllers/safe.controller.js";
 import { authenticateToken } from "../middlewares/authenticateToken.js";
 import { authorizeRoles } from "../middlewares/authMiddleware.js";
@@ -38,4 +39,10 @@ router.get(
   fetchSafeWithBalances
 );
 
+router.post(
+  "/add-balance",
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner"),
+  addBalanceToSafeHandler
+);
 export default router;
