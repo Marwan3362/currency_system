@@ -1,25 +1,48 @@
 import express from "express";
-import SafeController from "../controllers/safe.controller.js";
+import {
+  fetchAllSafes,
+  fetchSafeById,
+  fetchSafeByUserId,
+  fetchSafeWithBalances,
+  addBalanceToSafeHandler,
+} from "../controllers/safe.controller.js";
+import { authenticateToken } from "../middlewares/authenticateToken.js";
 import { authorizeRoles } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.get(
-  "/safes",
-  authorizeRoles("Admin", "Company Owner"),
-  SafeController.getAllSafes
+  "/",
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
+  fetchAllSafes
+);
+
+router.get(
+  "/:safeId",
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
+  fetchSafeById
+);
+
+router.get(
+  "/by-user/:userId",
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
+  fetchSafeByUserId
+);
+
+router.get(
+  "/:safeId/balances",
+  authenticateToken,
+  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
+  fetchSafeWithBalances
 );
 
 router.post(
-  "/safes/by-user",
+  "/add-balance",
+  authenticateToken,
   authorizeRoles("Admin", "Company Owner"),
-  SafeController.getSafeByUserId
+  addBalanceToSafeHandler
 );
-
-router.post(
-  "/safes/by-branch",
-  authorizeRoles("Admin", "Company Owner", "Branch Manager"),
-  SafeController.getSafesByBranchId
-);
-
 export default router;

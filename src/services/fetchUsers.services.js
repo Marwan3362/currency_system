@@ -1,13 +1,21 @@
-import User from "../models/user/User.js";
-import Role from "../models/user/Role.js";
-import UserCompany from "../models/UserCompany.js";
-import Branch from "../models/Branch.js";
-import Safe from "../models/Safe.js";
+import db from "../models/index.js";
+const { User, Role, Safe, UserCompany, Branch } = db;
+import { Op } from "sequelize";
 
-export const getAllTellers = async () => {
+export const getAllTellers = async (roleName, branch_id) => {
+  const whereClause = {
+    is_active: true,
+    branch_id: { [Op.not]: null },
+    company_id: { [Op.not]: null },
+  };
+
+  if (!["Admin", "CompanyOwner"].includes(roleName)) {
+    whereClause.branch_id = branch_id;
+  }
+
   return await User.findAll({
-    attributes: ["id", "name", "email"],
-    where: { is_active: true },
+    attributes: ["id", "name", "email", "branch_id", "company_id"],
+    where: whereClause,
     include: [
       {
         model: Role,
@@ -15,77 +23,69 @@ export const getAllTellers = async () => {
         attributes: ["name"],
       },
       {
-        model: UserCompany,
-        include: [
-          {
-            model: Branch,
-
-            as: "branchDetails",
-            attributes: ["id", "name"],
-          },
-        ],
-      },
-      {
         model: Safe,
-        as: "userSafe",
+        as: "Safe",
         attributes: ["id", "name"],
       },
     ],
   });
 };
 
-export const getAllOwnerBranches = async () => {
-  return await User.findAll({
+export const getAllOwnerBranches = async (roleName, branch_id, company_id) => {
+  const whereClause = {
+    is_active: true,
+    branch_id: { [Op.not]: null },
+    company_id: { [Op.not]: null },
+  };
+
+  if (roleName === "Branch Manager") {
+    whereClause.branch_id = branch_id;
+  } else if (roleName === "CompanyOwner") {
+    whereClause.company_id = company_id;
+  }
+
+  return await db.User.findAll({
     attributes: ["id", "name", "email"],
-    where: { is_active: true },
+    where: whereClause,
     include: [
       {
-        model: Role,
+        model: db.Role,
         where: { name: "Branch Manager" },
         attributes: ["name"],
       },
       {
-        model: UserCompany,
-        include: [
-          {
-            model: Branch,
-            as: "branchDetails",
-            attributes: ["id", "name"],
-          },
-        ],
+        model: db.Branch,
+        as: "branch",
+        attributes: ["id", "name"],
       },
       {
-        model: Safe,
-        as: "userSafe",
+        model: db.Safe,
+        as: "Safe",
         attributes: ["id", "name"],
       },
     ],
   });
 };
 
-// export const getAllCustomers = async () => {
-//   return await User.findAll({
-//     attributes: ["id", "name", "email", "phone"],
-//     where: { is_active: true },
-//     include: [
-//       {
-//         model: Role,
-//         where: { name: "Customer" },
-//         attributes: ["name"],
-//       },
-//     ],
-//   });
-// };
+export const getAllCustomers = async (roleName, branch_id) => {
+  const whereClause = {
+    is_active: true,
+    branch_id: { [Op.not]: null },
+    company_id: { [Op.not]: null },
+  };
 
-export const getAllCustomers = async () => {
+  if (!["Admin", "CompanyOwner"].includes(roleName)) {
+    whereClause.branch_id = branch_id;
+  }
+
   const users = await User.findAll({
     attributes: ["id", "name", "email", "phone"],
-    where: { is_active: true },
+    where: whereClause,
     include: [
       {
         model: Role,
-        attributes: ["name"],
         where: { name: "Customer" },
+        attributes: ["name"],
       },
     ],
   });
@@ -95,10 +95,29 @@ export const getAllCustomers = async () => {
     name: user.name,
     email: user.email,
     phone: user.phone,
-    role: user.Role.name,
+    role: user.Role?.name,
   }));
 };
 
-export const getCustomerByPhone = async (userPhone) => {
-  return await User.findOne({ where: { phone: userPhone, role_id: 6 } });
+export const getCustomerByPhone = async (userPhone, roleName, branch_id) => {
+  const whereClause = {
+    phone: userPhone,
+    is_active: true,
+  };
+
+  if (!["Admin", "CompanyOwner"].includes(roleName)) {
+    whereClause.branch_id = branch_id;
+  }
+
+  return await User.findOne({
+    attributes: ["id", "name", "email", "phone"],
+    where: whereClause,
+    include: [
+      {
+        model: Role,
+        where: { name: "Customer" },
+        attributes: ["name"],
+      },
+    ],
+  });
 };

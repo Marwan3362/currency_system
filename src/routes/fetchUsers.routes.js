@@ -5,30 +5,35 @@ import {
   getCustomers,
   getOneCustomer,
 } from "../controllers/fetchUsers.controller.js";
+import { authenticateToken } from "../middlewares/authenticateToken.js";
 import { authorizeRoles } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.get(
   "/tellers",
+  authenticateToken,
   authorizeRoles("Admin", "Company Owner", "Branch Manager"),
   getTellers
 );
 
 router.get(
   "/branches",
+  authenticateToken,
   authorizeRoles("Admin", "Company Owner"),
   getOwnerBranches
 );
 
 router.get(
   "/customers",
+  authenticateToken,
   authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
   getCustomers
 );
 
 router.get(
   "/customer-phone",
+  authenticateToken,
   authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
   getOneCustomer
 );

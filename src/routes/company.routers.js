@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post(
   "/create-compony",
-  authorizeRoles("Admin","Company Owner"),
+  authorizeRoles("Admin",),
   createCompanyWithOwner
 );
 

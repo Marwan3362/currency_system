@@ -1,54 +1,73 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
-import Safe from "./Safe.js";
-import Currency from "./Currency.js";
+import { Model } from "sequelize";
 
-const SafeDailyBalance = sequelize.define("SafeDailyBalance", {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  safe_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: Safe,
-      key: "id",
-    },
-  },
-  currency_id: {
-    type: DataTypes.STRING(10),
-    allowNull: false,
-    references: {
-      model: Currency,
-      key: "code",
-    },
-  },
-  amount: {
-    type: DataTypes.DECIMAL(15, 2),
-    allowNull: false,
-    defaultValue: 0,
-  },
-  date: {
-    type: DataTypes.DATEONLY,
-    allowNull: false,
-  },
-}, {
-  timestamps: true,
-  tableName: "safe_daily_balances",
-  indexes: [
+export default (sequelize, DataTypes) => {
+  class SafeDailyBalance extends Model {
+    static associate(models) {
+      SafeDailyBalance.belongsTo(models.Safe, {
+        foreignKey: "safe_id",
+        as: "safe",
+      });
+
+      SafeDailyBalance.belongsTo(models.Currency, {
+        foreignKey: "currency_id",
+        as: "currency",
+      });
+
+      SafeDailyBalance.belongsTo(models.User, {
+        foreignKey: "closed_by",
+        as: "closer",
+      });
+    }
+  }
+
+  SafeDailyBalance.init(
     {
-      unique: true,
-      fields: ["safe_id", "currency_id", "date"],
+      safe_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      currency_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      date: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+      },
+      opening_balance: {
+        type: DataTypes.FLOAT,
+        defaultValue: 0,
+      },
+      closing_balance: {
+        type: DataTypes.FLOAT,
+        defaultValue: 0,
+      },
+      total_in: {
+        type: DataTypes.FLOAT,
+        defaultValue: 0,
+      },
+      total_out: {
+        type: DataTypes.FLOAT,
+        defaultValue: 0,
+      },
+      closed_by: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
     },
-  ],
-});
+    {
+      sequelize,
+      modelName: "SafeDailyBalance",
+      tableName: "safe_daily_balances",
+      indexes: [
+        {
+          unique: true,
+          fields: ["safe_id", "currency_id", "date"],
+          name: "unique_safe_currency_daily_entry",
+        },
+      ],
+    }
+  );
 
-Safe.hasMany(SafeDailyBalance, { foreignKey: "safe_id" });
-SafeDailyBalance.belongsTo(Safe, { foreignKey: "safe_id" });
-
-Currency.hasMany(SafeDailyBalance, { foreignKey: "currency_id" });
-SafeDailyBalance.belongsTo(Currency, { foreignKey: "currency_id" });
-
-export default SafeDailyBalance;
+  return SafeDailyBalance;
+};

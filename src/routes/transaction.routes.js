@@ -1,31 +1,18 @@
 import express from "express";
-import TransactionController from "../controllers/transaction.controller.js";
-import SafeTransferController from "../controllers/safeTransfer.controller.js";
-import { authorizeRoles } from "../middlewares/authMiddleware.js";
+import {
+  createTransaction,
+  createTransfer,
+  approveTransaction,
+  getGroupedTransactionReport,
+  //   approveTransaction,
+} from "../controllers/transaction.controller.js";
+import { authenticateToken } from "../middlewares/authenticateToken.js";
 
 const router = express.Router();
 
-router.post(
-  "/transactions",
-  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
-  TransactionController.createTransaction
-);
+router.post("/create/out", authenticateToken, createTransaction);
+router.post("/create/in", authenticateToken, createTransfer);
+router.post("/active/:id", authenticateToken, approveTransaction);
+router.get("/report/grouped", authenticateToken, getGroupedTransactionReport);
 
-router.post(
-  "/safe-transfer",
-  authorizeRoles("Admin", "Company Owner", "Branch Manager"),
-  SafeTransferController.createTransfer
-);
-
-router.post(
-  "/safe-transfer/approve",
-  authorizeRoles("Admin", "Company Owner", "Branch Manager"),
-  SafeTransferController.approveTransfer
-);
-
-router.post(
-  "/transactions/by-safe",
-  authorizeRoles("Admin", "Company Owner", "Branch Manager", "Teller"),
-  SafeTransferController.getTransfersByUser
-);
 export default router;

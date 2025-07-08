@@ -1,87 +1,77 @@
-import authService from "../services/users/User.services.js";
-import Role from "../models/user/Role.js";
+import * as userService from "../services/users/User.services.js";
+import jwt from "jsonwebtoken";
 
-export const signup = async (req, res) => {
+import { loginSchema } from "../validations/auth.validation.js";
+export const register = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      password,
-      phone,
-      role_id,
-      safe_type,
-      company_id,
-      branch_id,
-    } = req.body;
-    const avatar = req.file ? `/uploads/${req.file.filename}` : null;
+    const result = await userService.createUserWithSafe(req.body, req.user);
+    res.status(201).json({ message: "User created", ...result });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+};
 
-    const { user, safe_id } = await authService.registerUser({
+export const login = async (req, res) => {
+  try {
+    await loginSchema.validate(req.body);
+
+    const user = await userService.authenticateUser(
+      req.body.email,
+      req.body.password
+    );
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+    const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    res.json({ message: "Login successful", token, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Login failed" });
+  }
+};
+
+export const createCustomerHandler = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    const customer = await userService.createCustomer({
       name,
       email,
-      password,
       phone,
-      avatar,
-      role_id,
-      safe_type,
-      company_id,
-      branch_id,
+      company_id: req.user.company_id,
+      branch_id: req.user.branch_id,
     });
 
     res.status(201).json({
-      message: "User registered successfully",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        avatar: user.avatar,
-        role: user.Role.name,
-        is_active: user.is_active,
-        createdAt: user.createdAt,
-        safe_id, // إرجاع safe_id مع المستخدم
-        branch_id, // إرجاع branch_id مع المستخدم
-      },
+      success: true,
+      message: "Customer created successfully",
+      data: customer,
     });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
   }
 };
 
-// دالة لتسجيل دخول المستخدم
-export const login = async (req, res) => {
+export const getCustomerByPhoneHandler = async (req, res) => {
   try {
-    const { user, safe_id, branch_id, token } = await authService.loginUser(
-      req.body
-    );
+    const { phone } = req.params;
 
-    res.json({
-      message: "Login successful",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        avatar: user.avatar,
-        role: user.Role.name,
-        is_active: user.is_active,
-        createdAt: user.createdAt,
-        safe_id, 
-        branch_id, 
-      },
-      token,
-    });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    const customer = await userService.getCustomerByPhone(phone);
+
+    res.status(200).json({ success: true, data: customer });
+  } catch (err) {
+    res.status(404).json({ success: false, message: err.message });
   }
 };
-
-export const getRole = async (req, res) => {
+export const logout = async (req, res) => {
   try {
-    const roles = await Role.findAll();
-    res.status(200).json(roles);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const userId = req.user.id;
+
+    await userService.logoutUser(userId);
+
+    res.status(200).json({ success: true, message: "Logout successful" });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
   }
 };
-
-

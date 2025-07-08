@@ -1,13 +1,23 @@
-// controllers/branch.controller.js
 import bulkCreateBranchSchema from "../validations/Branch.validation.js";
-import { createBranches, getBranchesByCompanyId } from "../services/Branch.service.js";
+import {
+  createBranches,
+  getBranchesByCompanyId,
+} from "../services/Branch.service.js";
 
 export const bulkCreateBranchHandler = async (req, res) => {
   try {
-    const validatedBranches = await bulkCreateBranchSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
+    const branchesInput = req.body.map((branch) => ({
+      ...branch,
+      company_id: req.user.company_id,
+    }));
+
+    const validatedBranches = await bulkCreateBranchSchema.validate(
+      branchesInput,
+      {
+        abortEarly: false,
+        stripUnknown: true,
+      }
+    );
 
     const branches = await createBranches(validatedBranches);
 
@@ -34,7 +44,7 @@ export const bulkCreateBranchHandler = async (req, res) => {
 
 export const getBranchesByCompanyIdHandler = async (req, res) => {
   try {
-    const companyId = req.params.companyId; 
+    const companyId = req.params.companyId;
     const branches = await getBranchesByCompanyId(companyId);
 
     if (!branches || branches.length === 0) {

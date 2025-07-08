@@ -1,5 +1,6 @@
 import * as Yup from "yup";
-import Company from "../models/Company.js";
+import db from "../models/index.js";
+const { Company } = db;
 
 export const createCompanyValidation = Yup.object({
   name: Yup.string()
@@ -10,7 +11,7 @@ export const createCompanyValidation = Yup.object({
       async (value) => {
         if (!value) return false;
         const company = await Company.findOne({ where: { name: value } });
-        return !company; 
+        return !company;
       }
     ),
   company_email: Yup.string()

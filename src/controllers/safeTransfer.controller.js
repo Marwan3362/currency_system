@@ -1,9 +1,9 @@
 import SafeTransferService from "../services/safeTransfer.service.js";
 import { safeTransferSchema } from "../validations/safeTransfer.validation.js";
-import SafeTransfer from "../models/SafeTransfer.js";
-import Transaction from "../models/Transaction.js";
-import Currency from "../models/Currency.js";
-import Safe from "../models/Safe.js";
+import SafeTransfer from "../models_old/SafeTransfer.js";
+import Transaction from "../models_old/Transaction.js";
+import Currency from "../models_old/Currency.js";
+import Safe from "../models_old/Safe.js";
 
 class SafeTransferController {
   // Create a transfer request

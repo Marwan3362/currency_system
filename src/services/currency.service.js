@@ -1,18 +1,36 @@
-// services/currency.service.js
-import Currency from "../models/Currency.js";
+import db from "../models/index.js";
+const { Currency } = db;
 
 export const getAllCurrencies = async () => {
-  return await Currency.findAll({attributes: ['code', 'name', 'symbol', 'exchange_rate'],});
+  return await Currency.findAll({
+    attributes: [
+      "id",
+      "code",
+      "name",
+      "name_ar",
+      "symbol",
+      "exchange_rate",
+      "buy_rate",
+      "sell_rate",
+      "custom_rate",
+      "is_active",
+    ],
+  });
 };
-export const updateExchangeRate = async (code, newExchangeRate) => {
-  const currency = await Currency.findOne({ where: { code: code } });
+
+export const addCurrency = async (currencyData) => {
+  const exists = await Currency.findOne({ where: { code: currencyData.code } });
+  if (exists) throw new Error("Currency already exists");
+
+  return await Currency.create(currencyData);
+};
+
+export const updateCurrency = async (code, updateData) => {
+  const currency = await Currency.findOne({ where: { code } });
   if (!currency) throw new Error("Currency not found");
 
-  currency.exchange_rate = newExchangeRate;
+  Object.assign(currency, updateData);
   await currency.save();
 
   return currency;
-};
-export const addCurrency = async (currencyData) => {
-  return await Currency.create(currencyData);
 };

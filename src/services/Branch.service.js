@@ -1,5 +1,6 @@
-// services/branch.service.js
-import Branch from "../models/Branch.js";
+import db from "../models/index.js";
+
+const { Branch } = db;
 
 export const createBranches = async (branches) => {
   const createdBranches = await Branch.bulkCreate(branches);
@@ -8,7 +9,7 @@ export const createBranches = async (branches) => {
 
 export const getBranchesByCompanyId = async (companyId) => {
   const branches = await Branch.findAll({
-    where: { company_id: companyId },  
+    where: { company_id: companyId },
   });
   return branches;
 };
