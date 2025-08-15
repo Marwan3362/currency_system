@@ -23,6 +23,7 @@ export default (sequelize, DataTypes) => {
         foreignKey: "to_currency_id",
         as: "to_currency",
       });
+
       Transaction.belongsTo(models.User, {
         foreignKey: "customer_id",
         as: "customer",
@@ -77,6 +78,21 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.ENUM("buy", "sell", "transfer"),
         allowNull: true,
       },
+
+      notes: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      customer_phone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      reversed: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false, // 0
+      },
+      // ----------------------
     },
     {
       sequelize,

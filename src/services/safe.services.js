@@ -26,7 +26,7 @@ export const getAllSafes = async (roleName, branch_id, company_id, user_id) => {
     company_id,
     user_id
   );
-  if (!whereClause) return [];
+  // if (!whereClause) return [];
 
   return await Safe.findAll({
     where: whereClause,
